@@ -91,6 +91,9 @@ let backgroundNodes: BackgroundNode[] = [];
 let codeStreams: CodeStream[] = [];
 let powerUps: PowerUp[] = [];
 let keys: Record<string, boolean> = {};
+let touchActive = false;
+let touchX = 0;
+let touchY = 0;
 let lastTime = 0;
 let spawnTimer = 0;
 let spawnInterval = 900;
@@ -321,10 +324,25 @@ const updatePlayer = (delta: number) => {
   let dx = 0;
   let dy = 0;
 
+  // Keyboard controls
   if (keys.arrowleft || keys.a) dx -= 1;
   if (keys.arrowright || keys.d) dx += 1;
   if (keys.arrowup || keys.w) dy -= 1;
   if (keys.arrowdown || keys.s) dy += 1;
+
+  // Touch controls - move towards touch point
+  if (touchActive) {
+    const playerCenterX = player.x + player.size / 2;
+    const playerCenterY = player.y + player.size / 2;
+    const distX = touchX - playerCenterX;
+    const distY = touchY - playerCenterY;
+    const distance = Math.hypot(distX, distY);
+    
+    if (distance > 5) {
+      dx = distX / distance;
+      dy = distY / distance;
+    }
+  }
 
   const magnitude = Math.hypot(dx, dy) || 1;
   player.x += (dx / magnitude) * player.speed * delta;
@@ -877,6 +895,36 @@ window.addEventListener("keydown", (event) => {
 
 window.addEventListener("keyup", (event) => {
   keys[event.key.toLowerCase()] = false;
+});
+
+// Touch controls for mobile
+canvas.addEventListener("touchstart", (event) => {
+  event.preventDefault();
+  const touch = event.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  touchX = touch.clientX - rect.left;
+  touchY = touch.clientY - rect.top;
+  touchActive = true;
+});
+
+canvas.addEventListener("touchmove", (event) => {
+  event.preventDefault();
+  if (touchActive) {
+    const touch = event.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    touchX = touch.clientX - rect.left;
+    touchY = touch.clientY - rect.top;
+  }
+});
+
+canvas.addEventListener("touchend", (event) => {
+  event.preventDefault();
+  touchActive = false;
+});
+
+canvas.addEventListener("touchcancel", (event) => {
+  event.preventDefault();
+  touchActive = false;
 });
 
 window.addEventListener("resize", () => {

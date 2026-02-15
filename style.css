@@ -12,6 +12,10 @@
   margin: 0;
   padding: 0;
   font-family: "Rajdhani", "Segoe UI", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
 }
 
 body {
@@ -150,4 +154,61 @@ button {
 button:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 16px rgba(76, 201, 255, 0.6);
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .hud {
+    top: 8px;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+
+  .hud-item {
+    font-size: 14px;
+  }
+
+  .hud-control button {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .overlay-card {
+    padding: 20px 24px;
+    max-width: 90vw;
+  }
+
+  .overlay-card h1 {
+    font-size: 28px;
+  }
+
+  .final-score {
+    margin-bottom: 16px;
+    font-size: 16px;
+  }
+
+  button {
+    padding: 8px 18px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hud {
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    align-items: flex-start;
+  }
+
+  .hud-item {
+    font-size: 12px;
+  }
+
+  .hud-control {
+    display: flex;
+    gap: 6px;
+  }
 }
