@@ -133,6 +133,7 @@ let shieldActive = false;
 let slowMotionTimer = 0;
 let scoreMultiplier = 1;
 let multiplierTimer = 0;
+let powerUpTimer = 0;
 
 const maxHealth = 3;
 const baseSpawnInterval = 900;
@@ -148,6 +149,7 @@ const codeChars = "0123456789ABCDEF<>/{}[]#$";
 const waveSize = 10;
 const pauseDuration = 2;
 const touchSpeedMultiplier = 1.2;
+const powerUpInterval = 12;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
@@ -216,6 +218,7 @@ const resetGame = () => {
   slowMotionTimer = 0;
   scoreMultiplier = 1;
   multiplierTimer = 0;
+  powerUpTimer = 0;
   overlay.classList.add("hidden");
   updateHud();
   updateMuteUi();
@@ -433,7 +436,7 @@ const triggerExplosion = (x: number, y: number, intensity: number) => {
   playExplosionSound(intensity);
   triggerShimmer(0.5 * intensity);
   triggerGlowPulse(0.5 * intensity);
-  if (Math.random() < 0.75) {
+  if (Math.random() < 0.35) {
     spawnPowerUp();
   }
 };
@@ -508,17 +511,17 @@ const spawnParticles = (x: number, y: number, intensity: number) => {
   }
 };
 
-const spawnPowerUp = () => {
+const spawnPowerUp = (forcedType?: "shield" | "slowMo" | "multiplier" | "health") => {
   const types: ("shield" | "slowMo" | "multiplier" | "health")[] = [
     "shield",
     "slowMo",
     "multiplier",
     "health",
   ];
-  const type = types[Math.floor(Math.random() * types.length)];
+  const type = forcedType ?? types[Math.floor(Math.random() * types.length)];
   const size = 36;
   const x = Math.random() * (canvas.width - size);
-  const speed = baseVirusSpeed * 0.9 + difficulty * 16 + Math.random() * 40;
+  const speed = baseVirusSpeed * 0.45 + difficulty * 8 + Math.random() * 16;
   powerUps.push({
     x,
     y: -size,
@@ -949,6 +952,11 @@ const gameLoop = (timestamp: number) => {
     updateGlowPulse(delta);
     updateScorePulse(delta);
     updatePowerUps(delta);
+    powerUpTimer += delta;
+    if (powerUpTimer >= powerUpInterval) {
+      powerUpTimer = 0;
+      spawnPowerUp("multiplier");
+    }
     updateFloatingTexts(delta);
     detectCollisions();
   }
