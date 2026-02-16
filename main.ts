@@ -59,7 +59,7 @@ interface PowerUp {
   y: number;
   size: number;
   speed: number;
-  type: "shield" | "slowMo" | "multiplier";
+  type: "shield" | "slowMo" | "multiplier" | "health";
   spawnTime: number;
 }
 
@@ -497,7 +497,12 @@ const spawnParticles = (x: number, y: number, intensity: number) => {
 };
 
 const spawnPowerUp = () => {
-  const types: ("shield" | "slowMo" | "multiplier")[] = ["shield", "slowMo", "multiplier"];
+  const types: ("shield" | "slowMo" | "multiplier" | "health")[] = [
+    "shield",
+    "slowMo",
+    "multiplier",
+    "health",
+  ];
   const type = types[Math.floor(Math.random() * types.length)];
   const size = 36;
   const x = Math.random() * (canvas.width - size);
@@ -512,7 +517,7 @@ const spawnPowerUp = () => {
   });
 };
 
-const activatePowerUp = (type: "shield" | "slowMo" | "multiplier") => {
+const activatePowerUp = (type: "shield" | "slowMo" | "multiplier" | "health") => {
   switch (type) {
     case "shield":
       shieldActive = true;
@@ -527,6 +532,12 @@ const activatePowerUp = (type: "shield" | "slowMo" | "multiplier") => {
       multiplierTimer = 8;
       playTone(1000, 0.2, "square", 0.06);
       triggerGlowPulse(0.6);
+      break;
+    case "health":
+      player.health += 1;
+      updateHud();
+      playTone(720, 0.18, "triangle", 0.06);
+      triggerGlowPulse(0.5);
       break;
   }
 };
@@ -822,6 +833,10 @@ const renderPowerUps = () => {
       color = "rgba(255, 200, 50, 0.9)";
       glowColor = "rgba(255, 200, 50, 0.8)";
       icon = "★";
+    } else if (powerUp.type === "health") {
+      color = "rgba(80, 220, 140, 0.9)";
+      glowColor = "rgba(80, 220, 140, 0.8)";
+      icon = "+";
     }
     
     ctx.fillStyle = color;

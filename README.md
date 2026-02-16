@@ -10,7 +10,7 @@ Gameplay stuff: You get 3 hearts. Every virus you hit costs you one unless you h
 
 Visual stuff: Glowing blue player with a neon aura, red viruses with dynamic shadows, particle explosions everywhere, screen shake on impact, subtle camera zoom, animated grid background, and ASCII code streams falling down. The shimmer effect pulses with the action.
 
-Audio stuff: Everything's synthesized with Web Audio oscillators. No pre-recorded sounds—the game generates impact sounds that change pitch based on virus size, explosion bursts, and a game-over tone. You can mute it with the M key or the button.
+Audio stuff: Everything's synthgesized with Web Audio oscillators. No pre-recorded sounds—the game generates impact sounds that change pitch based on virus size, explosion bursts, and a game-over tone. You can mute it with the M key or the button.
 
 HUD stuff: Shows your score, health as hearts, difficulty level, pause/resume button, and mute toggle. Plus when you hit 100-point milestones, the HUD pulses to celebrate.
 
@@ -56,6 +56,14 @@ Arrow keys or WASD to move around. That's it. Viruses fall down. You're a square
 Blue square with symbol: Shield. Takes one hit for free.
 Purple square with symbol: Slow-Mo. Viruses move half speed for 5 seconds.
 Gold square with symbol: 2x multiplier. Your score counts double for 8 seconds.
+Green square with symbol: Health. Adds one heart, and it can go beyond 3.
+
+How to use them well:
+
+Shield: Use it to crash into a virus on purpose and keep your hearts intact. Great for clearing space.
+Slow-Mo: Grab it when the screen is crowded, then weave through and farm easy collisions.
+Multiplier: Play safe and stay alive while it is active so the bonus time is worth it.
+Health: Take it when you are low, or stack extra hearts before things get hectic.
 
 The game gets noticeably harder every 10 seconds. More viruses spawn, they move faster. At some point you can't dodge anymore, so you have to be tactical about collisions.
 
