@@ -58,6 +58,7 @@ interface PowerUp {
   x: number;
   y: number;
   size: number;
+  speed: number;
   type: "shield" | "slowMo" | "multiplier";
   spawnTime: number;
 }
@@ -94,6 +95,8 @@ let keys: Record<string, boolean> = {};
 let touchActive = false;
 let touchX = 0;
 let touchY = 0;
+let touchMoveX = 0;
+let touchMoveY = 0;
 let lastTime = 0;
 let spawnTimer = 0;
 let spawnInterval = 900;
@@ -135,6 +138,8 @@ const gridSpeed = 20;
 const codeChars = "0123456789ABCDEF<>/{}[]#$";
 const waveSize = 10;
 const pauseDuration = 2;
+const touchSpeedMultiplier = 1.35;
+const touchSmoothing = 0.2;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
@@ -339,14 +344,22 @@ const updatePlayer = (delta: number) => {
     const distance = Math.hypot(distX, distY);
     
     if (distance > 5) {
-      dx = distX / distance;
-      dy = distY / distance;
+      const targetX = distX / distance;
+      const targetY = distY / distance;
+      touchMoveX += (targetX - touchMoveX) * touchSmoothing;
+      touchMoveY += (targetY - touchMoveY) * touchSmoothing;
     }
+    dx = touchMoveX;
+    dy = touchMoveY;
+  } else {
+    touchMoveX += (0 - touchMoveX) * touchSmoothing;
+    touchMoveY += (0 - touchMoveY) * touchSmoothing;
   }
 
   const magnitude = Math.hypot(dx, dy) || 1;
-  player.x += (dx / magnitude) * player.speed * delta;
-  player.y += (dy / magnitude) * player.speed * delta;
+  const speed = player.speed * (touchActive ? touchSpeedMultiplier : 1);
+  player.x += (dx / magnitude) * speed * delta;
+  player.y += (dy / magnitude) * speed * delta;
 
   player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
   player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
@@ -419,7 +432,7 @@ const triggerExplosion = (x: number, y: number, intensity: number) => {
   triggerShimmer(0.5 * intensity);
   triggerGlowPulse(0.5 * intensity);
   if (Math.random() < 0.5) {
-    spawnPowerUp(x, y);
+    spawnPowerUp();
   }
 };
 
@@ -493,13 +506,17 @@ const spawnParticles = (x: number, y: number, intensity: number) => {
   }
 };
 
-const spawnPowerUp = (x: number, y: number) => {
+const spawnPowerUp = () => {
   const types: ("shield" | "slowMo" | "multiplier")[] = ["shield", "slowMo", "multiplier"];
   const type = types[Math.floor(Math.random() * types.length)];
+  const size = 36;
+  const x = Math.random() * (canvas.width - size);
+  const speed = baseVirusSpeed * 0.6 + difficulty * 10 + Math.random() * 20;
   powerUps.push({
-    x: x - 18,
-    y: y - 18,
-    size: 36,
+    x,
+    y: -size,
+    size,
+    speed,
     type,
     spawnTime: elapsed,
   });
@@ -617,9 +634,19 @@ const updatePowerUps = (delta: number) => {
   } else if (scoreMultiplier === 2) {
     scoreMultiplier = 1;
   }
-  
+
+  const speedMultiplier = slowMotionTimer > 0 ? 0.5 : 1;
   powerUps.forEach((powerUp) => {
-    powerUp.y += 40 * delta;
+    powerUp.y += powerUp.speed * delta * speedMultiplier;
+    if (Math.random() > 0.6) {
+      addTrail(
+        powerUp.x,
+        powerUp.y,
+        powerUp.size,
+        "rgba(255, 215, 120, 0.35)",
+        1.4
+      );
+    }
   });
   powerUps = powerUps.filter((powerUp) => powerUp.y < canvas.height + 50);
 };
@@ -920,11 +947,15 @@ canvas.addEventListener("touchmove", (event) => {
 canvas.addEventListener("touchend", (event) => {
   event.preventDefault();
   touchActive = false;
+  touchMoveX = 0;
+  touchMoveY = 0;
 });
 
 canvas.addEventListener("touchcancel", (event) => {
   event.preventDefault();
   touchActive = false;
+  touchMoveX = 0;
+  touchMoveY = 0;
 });
 
 window.addEventListener("resize", () => {
