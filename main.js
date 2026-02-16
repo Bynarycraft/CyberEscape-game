@@ -30,6 +30,8 @@ let touchMoveX = 0;
 let touchMoveY = 0;
 let touchVelX = 0;
 let touchVelY = 0;
+let keyMoveX = 0;
+let keyMoveY = 0;
 let lastTime = 0;
 let spawnTimer = 0;
 let spawnInterval = 900;
@@ -74,6 +76,8 @@ const touchSpeedMultiplier = 1.35;
 const touchSmoothing = 0.2;
 const touchFollowStrength = 10;
 const touchMaxSpeed = 520;
+const keySmoothing = 0.35;
+const keySpeedMultiplier = 1.15;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const resizeCanvas = () => {
     canvas.width = window.innerWidth;
@@ -231,15 +235,30 @@ const spawnVirus = () => {
 const updatePlayer = (delta) => {
     let dx = 0;
     let dy = 0;
+    let keyDX = 0;
+    let keyDY = 0;
     // Keyboard controls
     if (keys.arrowleft || keys.a)
-        dx -= 1;
+        keyDX -= 1;
     if (keys.arrowright || keys.d)
-        dx += 1;
+        keyDX += 1;
     if (keys.arrowup || keys.w)
-        dy -= 1;
+        keyDY -= 1;
     if (keys.arrowdown || keys.s)
-        dy += 1;
+        keyDY += 1;
+    const keyMagnitude = Math.hypot(keyDX, keyDY) || 1;
+    if (keyDX !== 0 || keyDY !== 0) {
+        const targetX = keyDX / keyMagnitude;
+        const targetY = keyDY / keyMagnitude;
+        keyMoveX += (targetX - keyMoveX) * keySmoothing;
+        keyMoveY += (targetY - keyMoveY) * keySmoothing;
+    }
+    else {
+        keyMoveX += (0 - keyMoveX) * keySmoothing;
+        keyMoveY += (0 - keyMoveY) * keySmoothing;
+    }
+    dx = keyMoveX;
+    dy = keyMoveY;
     // Touch controls - move towards touch point
     if (touchActive) {
         const playerCenterX = player.x + player.size / 2;
@@ -262,7 +281,7 @@ const updatePlayer = (delta) => {
         touchVelY += (0 - touchVelY) * touchSmoothing;
     }
     const magnitude = Math.hypot(dx, dy) || 1;
-    const speed = player.speed * (touchActive ? touchSpeedMultiplier : 1);
+    const speed = player.speed * (touchActive ? touchSpeedMultiplier : keySpeedMultiplier);
     if (touchActive) {
         player.x += dx * delta;
         player.y += dy * delta;
