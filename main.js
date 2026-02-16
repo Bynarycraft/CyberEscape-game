@@ -132,9 +132,10 @@ const resetGame = () => {
 };
 const updateHud = () => {
     scoreEl.textContent = Math.floor(score).toString();
-    const filled = "&#9829;".repeat(player.health);
+    const baseFilled = "&#9829;".repeat(Math.min(player.health, maxHealth));
     const empty = "&#9825;".repeat(Math.max(0, maxHealth - player.health));
-    healthEl.innerHTML = filled + empty;
+    const extra = "&#9829;".repeat(Math.max(0, player.health - maxHealth));
+    healthEl.innerHTML = baseFilled + empty + extra;
     difficultyEl.textContent = difficulty.toString();
 };
 const updateMuteUi = () => {
