@@ -22,6 +22,7 @@ let trails = [];
 let backgroundNodes = [];
 let codeStreams = [];
 let powerUps = [];
+let floatingTexts = [];
 let keys = {};
 let touchActive = false;
 let touchX = 0;
@@ -409,6 +410,15 @@ const activatePowerUp = (type) => {
             updateHud();
             playTone(720, 0.18, "triangle", 0.06);
             triggerGlowPulse(0.5);
+            floatingTexts.push({
+                x: player.x + player.size / 2,
+                y: player.y - 8,
+                text: "+1 HP",
+                alpha: 1,
+                life: 0.9,
+                vy: -24,
+                color: "rgba(80, 220, 140, 1)",
+            });
             break;
     }
 };
@@ -505,6 +515,14 @@ const updatePowerUps = (delta) => {
         }
     });
     powerUps = powerUps.filter((powerUp) => powerUp.y < canvas.height + 50);
+};
+const updateFloatingTexts = (delta) => {
+    floatingTexts.forEach((text) => {
+        text.y += text.vy * delta;
+        text.life -= delta;
+        text.alpha = Math.max(0, text.life / 0.9);
+    });
+    floatingTexts = floatingTexts.filter((text) => text.life > 0);
 };
 const updateWavePause = (delta) => {
     if (pauseTimer > 0) {
@@ -645,6 +663,15 @@ const renderParticles = () => {
         ctx.fill();
     });
 };
+const renderFloatingTexts = () => {
+    ctx.font = "bold 18px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    floatingTexts.forEach((text) => {
+        ctx.fillStyle = text.color.replace(", 1)", `, ${text.alpha})`);
+        ctx.fillText(text.text, text.x, text.y);
+    });
+};
 const renderPowerUps = () => {
     powerUps.forEach((powerUp) => {
         const age = elapsed - powerUp.spawnTime;
@@ -696,6 +723,7 @@ const renderGame = (delta) => {
     renderBackground(delta);
     renderTrails();
     renderParticles();
+    renderFloatingTexts();
     renderPowerUps();
     renderPlayer();
     renderViruses();
@@ -737,6 +765,7 @@ const gameLoop = (timestamp) => {
         updateGlowPulse(delta);
         updateScorePulse(delta);
         updatePowerUps(delta);
+        updateFloatingTexts(delta);
         detectCollisions();
     }
     renderGame(delta);

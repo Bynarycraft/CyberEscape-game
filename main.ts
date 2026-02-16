@@ -63,6 +63,16 @@ interface PowerUp {
   spawnTime: number;
 }
 
+interface FloatingText {
+  x: number;
+  y: number;
+  text: string;
+  alpha: number;
+  life: number;
+  vy: number;
+  color: string;
+}
+
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
 
@@ -91,6 +101,7 @@ let trails: Trail[] = [];
 let backgroundNodes: BackgroundNode[] = [];
 let codeStreams: CodeStream[] = [];
 let powerUps: PowerUp[] = [];
+let floatingTexts: FloatingText[] = [];
 let keys: Record<string, boolean> = {};
 let touchActive = false;
 let touchX = 0;
@@ -538,6 +549,15 @@ const activatePowerUp = (type: "shield" | "slowMo" | "multiplier" | "health") =>
       updateHud();
       playTone(720, 0.18, "triangle", 0.06);
       triggerGlowPulse(0.5);
+      floatingTexts.push({
+        x: player.x + player.size / 2,
+        y: player.y - 8,
+        text: "+1 HP",
+        alpha: 1,
+        life: 0.9,
+        vy: -24,
+        color: "rgba(80, 220, 140, 1)",
+      });
       break;
   }
 };
@@ -650,6 +670,15 @@ const updatePowerUps = (delta: number) => {
     }
   });
   powerUps = powerUps.filter((powerUp) => powerUp.y < canvas.height + 50);
+};
+
+const updateFloatingTexts = (delta: number) => {
+  floatingTexts.forEach((text) => {
+    text.y += text.vy * delta;
+    text.life -= delta;
+    text.alpha = Math.max(0, text.life / 0.9);
+  });
+  floatingTexts = floatingTexts.filter((text) => text.life > 0);
 };
 
 const updateWavePause = (delta: number) => {
@@ -810,6 +839,16 @@ const renderParticles = () => {
   });
 };
 
+const renderFloatingTexts = () => {
+  ctx.font = "bold 18px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  floatingTexts.forEach((text) => {
+    ctx.fillStyle = text.color.replace(", 1)", `, ${text.alpha})`);
+    ctx.fillText(text.text, text.x, text.y);
+  });
+};
+
 const renderPowerUps = () => {
   powerUps.forEach((powerUp) => {
     const age = elapsed - powerUp.spawnTime;
@@ -863,6 +902,7 @@ const renderGame = (delta: number) => {
   renderBackground(delta);
   renderTrails();
   renderParticles();
+  renderFloatingTexts();
   renderPowerUps();
   renderPlayer();
   renderViruses();
@@ -908,6 +948,7 @@ const gameLoop = (timestamp: number) => {
     updateGlowPulse(delta);
     updateScorePulse(delta);
     updatePowerUps(delta);
+    updateFloatingTexts(delta);
     detectCollisions();
   }
   
