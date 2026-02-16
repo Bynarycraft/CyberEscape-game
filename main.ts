@@ -517,7 +517,7 @@ const spawnPowerUp = () => {
   const type = types[Math.floor(Math.random() * types.length)];
   const size = 36;
   const x = Math.random() * (canvas.width - size);
-  const speed = baseVirusSpeed * 0.6 + difficulty * 10 + Math.random() * 20;
+  const speed = baseVirusSpeed * 0.9 + difficulty * 16 + Math.random() * 40;
   powerUps.push({
     x,
     y: -size,
