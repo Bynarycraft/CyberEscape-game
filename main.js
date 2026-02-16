@@ -302,7 +302,7 @@ const triggerExplosion = (x, y, intensity) => {
     playExplosionSound(intensity);
     triggerShimmer(0.5 * intensity);
     triggerGlowPulse(0.5 * intensity);
-    if (Math.random() < 0.5) {
+    if (Math.random() < 0.75) {
         spawnPowerUp();
     }
 };
