@@ -97,6 +97,8 @@ let touchX = 0;
 let touchY = 0;
 let touchMoveX = 0;
 let touchMoveY = 0;
+let touchVelX = 0;
+let touchVelY = 0;
 let lastTime = 0;
 let spawnTimer = 0;
 let spawnInterval = 900;
@@ -140,6 +142,8 @@ const waveSize = 10;
 const pauseDuration = 2;
 const touchSpeedMultiplier = 1.35;
 const touchSmoothing = 0.2;
+const touchFollowStrength = 10;
+const touchMaxSpeed = 520;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
@@ -344,22 +348,28 @@ const updatePlayer = (delta: number) => {
     const distance = Math.hypot(distX, distY);
     
     if (distance > 5) {
-      const targetX = distX / distance;
-      const targetY = distY / distance;
-      touchMoveX += (targetX - touchMoveX) * touchSmoothing;
-      touchMoveY += (targetY - touchMoveY) * touchSmoothing;
+      const targetSpeed = Math.min(touchMaxSpeed, distance * touchFollowStrength);
+      const targetVX = (distX / distance) * targetSpeed;
+      const targetVY = (distY / distance) * targetSpeed;
+      touchVelX += (targetVX - touchVelX) * touchSmoothing;
+      touchVelY += (targetVY - touchVelY) * touchSmoothing;
     }
-    dx = touchMoveX;
-    dy = touchMoveY;
+    dx = touchVelX;
+    dy = touchVelY;
   } else {
-    touchMoveX += (0 - touchMoveX) * touchSmoothing;
-    touchMoveY += (0 - touchMoveY) * touchSmoothing;
+    touchVelX += (0 - touchVelX) * touchSmoothing;
+    touchVelY += (0 - touchVelY) * touchSmoothing;
   }
 
   const magnitude = Math.hypot(dx, dy) || 1;
   const speed = player.speed * (touchActive ? touchSpeedMultiplier : 1);
-  player.x += (dx / magnitude) * speed * delta;
-  player.y += (dy / magnitude) * speed * delta;
+  if (touchActive) {
+    player.x += dx * delta;
+    player.y += dy * delta;
+  } else {
+    player.x += (dx / magnitude) * speed * delta;
+    player.y += (dy / magnitude) * speed * delta;
+  }
 
   player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
   player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
@@ -949,6 +959,8 @@ canvas.addEventListener("touchend", (event) => {
   touchActive = false;
   touchMoveX = 0;
   touchMoveY = 0;
+  touchVelX = 0;
+  touchVelY = 0;
 });
 
 canvas.addEventListener("touchcancel", (event) => {
@@ -956,11 +968,14 @@ canvas.addEventListener("touchcancel", (event) => {
   touchActive = false;
   touchMoveX = 0;
   touchMoveY = 0;
+  touchVelX = 0;
+  touchVelY = 0;
 });
 
 window.addEventListener("resize", () => {
   resizeCanvas();
-  resetGame();
+  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+  player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
 });
 
 restartBtn.addEventListener("click", () => {
